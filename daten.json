@@ -1,85 +1,41 @@
 {
  "players": [
-  "Stefan Huber",
-  "Markus Bauer",
-  "Andreas Maier",
-  "Thomas Wagner",
-  "Florian Schmid",
-  "Lukas Becker",
-  "Daniel Hofmann",
-  "Julia Koch"
+  "Johannes Memminger",
+  "Kai Probst",
+  "Christian Guck",
+  "Philipp Greif",
+  "Nico Probst",
+  "Tobias Gleich",
+  "Seizmeier Peter",
+  "Thomas Pöllerspöck",
+  "Thomas Liepert",
+  "Florian Memminger",
+  "Werner Wieland",
+  "Stefan Liepert",
+  "Matthias Strohmeier",
+  "Uli Fischer",
+  "David Dürr",
+  "Alexander Zaha",
+  "Siegfried Liepert",
+  "Alexander Peppler",
+  "Sven Fangmeyer",
+  "Kevin Assman",
+  "Nancy Oberheiden",
+  "Rupp Zaha",
+  "Michael Tengler",
+  "Michael Stadelmeier",
+  "Jürgen Schuster",
+  "Gerlinde Espig",
+  "Bettina Stadelmeier",
+  "Carina Strohmeier"
  ],
  "settings": {
   "firstTo": 3,
   "maxUp": 3,
   "rule23": true,
-  "seasonStart": "2026-07-01",
-  "firstCutoff": "2026-09-30",
-  "interval": 3
+  "seasonStart": "2027-01-01",
+  "firstCutoff": "2027-01-31",
+  "interval": 1
  },
- "challenges": [
-  {
-   "date": "2026-07-10",
-   "hf": "Andreas Maier",
-   "hg": "Stefan Huber",
-   "lh": 3,
-   "lg": 1,
-   "ft": "",
-   "note": ""
-  },
-  {
-   "date": "2026-08-02",
-   "hf": "Julia Koch",
-   "hg": "Florian Schmid",
-   "lh": 3,
-   "lg": 2,
-   "ft": "",
-   "note": ""
-  },
-  {
-   "date": "2026-08-20",
-   "hf": "Daniel Hofmann",
-   "hg": "Andreas Maier",
-   "lh": 3,
-   "lg": 0,
-   "ft": "",
-   "note": ""
-  },
-  {
-   "date": "2026-09-05",
-   "hf": "Markus Bauer",
-   "hg": "Stefan Huber",
-   "lh": 3,
-   "lg": 0,
-   "ft": "",
-   "note": ""
-  },
-  {
-   "date": "2026-10-12",
-   "hf": "Thomas Wagner",
-   "hg": "Julia Koch",
-   "lh": 5,
-   "lg": 4,
-   "ft": 5,
-   "note": ""
-  },
-  {
-   "date": "2026-11-03",
-   "hf": "Lukas Becker",
-   "hg": "Florian Schmid",
-   "lh": "",
-   "lg": "",
-   "ft": "",
-   "note": ""
-  },
-  {
-   "date": "2026-11-18",
-   "hf": "Daniel Hofmann",
-   "hg": "Thomas Wagner",
-   "lh": 1,
-   "lg": 3,
-   "ft": "",
-   "note": ""
-  }
- ]
+ "challenges": []
 }
