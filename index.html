@@ -38,6 +38,7 @@ button.s{background:#222d45}button.x{background:none;border:1px solid var(--line
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 p.rule{margin:0 0 10px}.mut{color:var(--mut)}
 .ph{display:none}
+footer{max-width:1400px;margin:0 auto;padding:8px 16px 24px;text-align:center;color:var(--mut)}footer a{color:var(--mut)}
 body:not(.admin) .adm{display:none!important}
 #sw .noprint{display:none}
 @page{size:A4 portrait;margin:10mm}
@@ -48,6 +49,7 @@ body:not(.admin) .adm{display:none!important}
 <header><h1>🎯 Dart-<span>Vereinsrangliste</span></h1>
 <nav id="nav"><button data-v="r">Rangliste</button><button data-v="c">Herausforderungen</button><button data-v="s">Regeln &amp; Spieler</button></nav><div class="adm warn" style="padding:8px 0">Admin-Modus: Änderungen gelten nur auf diesem Gerät, bis du daten.json herunterlädst und online hochlädst.</div></header>
 <main id="app">Lade Daten …</main>
+<footer class="noprint"><a href="#" onclick="go('i');return false">Impressum</a> · <a href="#" onclick="go('d');return false">Datenschutz</a></footer>
 <script>
 const K='dartRangliste_v1',FT=[2,3,4,5,6,7,9,11];
 const SAMPLE=()=>({players:['Stefan Huber','Markus Bauer','Andreas Maier','Thomas Wagner','Florian Schmid','Lukas Becker','Daniel Hofmann','Julia Koch'],
@@ -56,7 +58,53 @@ challenges:[['2026-07-10','Andreas Maier','Stefan Huber',3,1],['2026-08-02','Jul
 const ADMIN=/[?&]admin/.test(location.search);
 document.body.classList.toggle('admin',ADMIN);
 let st=null,view='r',msg='',jsonTxt='';
-const norm=o=>({players:(o.players||[]).map(String).slice(0,40),settings:Object.assign(SAMPLE().settings,o.settings||{}),challenges:o.challenges||[]});
+const DEFLEGAL={
+impressum:`Angaben gemäß § 5 DDG
+
+[Vereinsname], [Rechtsform, z. B. eingetragener Verein]
+[Straße und Hausnummer]
+[PLZ und Ort]
+
+Vertreten durch den Vorstand:
+[Vorname Nachname, Funktion]
+
+Kontakt:
+E-Mail: [E-Mail-Adresse]
+Telefon: [optional]
+
+Vereinsregister: [Registergericht und Registernummer, falls eingetragen]
+
+Verantwortlich für den Inhalt:
+[Vorname Nachname, Anschrift wie oben]
+
+Hinweis: Dies ist ein Beispieltext. Bitte alle Angaben in eckigen Klammern ersetzen und den Text bei Bedarf rechtlich prüfen lassen.`,
+datenschutz:`1. Verantwortlicher
+[Vereinsname, Anschrift, E-Mail-Adresse] (siehe Impressum)
+
+2. Welche Daten werden angezeigt?
+Auf dieser Seite werden Vor- und Nachnamen von Vereinsmitgliedern, Spieldaten (Datum, Gegner, Ergebnis) und der aktuelle Ranglistenplatz veröffentlicht. Zweck ist die Organisation und Information über die vereinsinterne Dart-Rangliste.
+
+3. Rechtsgrundlage
+[Zutreffendes wählen und prüfen:] Einwilligung der Mitglieder (Art. 6 Abs. 1 lit. a DSGVO) bzw. berechtigtes Interesse des Vereins an der Durchführung des Spielbetriebs (Art. 6 Abs. 1 lit. f DSGVO).
+
+4. Speicherdauer
+Die Daten werden für die Dauer der Saison bzw. der Teilnahme an der Rangliste gespeichert und danach gelöscht oder anonymisiert, sofern keine längere Aufbewahrung erforderlich ist.
+
+5. Hosting
+Diese Seite wird bei [GitHub Pages (GitHub Inc., USA) – bitte Hoster eintragen und dessen Datenschutzhinweise prüfen] gehostet. Beim Aufruf verarbeitet der Hoster technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit sowie Browserinformationen in Server-Logfiles. Eine Übermittlung in Drittländer (z. B. USA) kann dabei stattfinden. [Hinweis zu Garantien nach Angaben des Hosters ergänzen.]
+
+6. Cookies und Tracking
+Diese Seite setzt keine Cookies, verwendet keine Analyse- oder Tracking-Dienste und lädt keine Schriftarten, Skripte oder sonstigen Inhalte von Drittanbietern nach.
+
+7. Ihre Rechte
+Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Widerspruch sowie auf Beschwerde bei einer Datenschutzaufsichtsbehörde. Wenn Ihr Name von dieser Seite entfernt werden soll, wenden Sie sich bitte an: [E-Mail-Adresse].
+
+Hinweis: Dies ist ein Beispieltext und keine Rechtsberatung. Bitte alle Angaben in eckigen Klammern ersetzen und den Text bei Bedarf prüfen lassen.`};
+const L=()=>Object.assign({},DEFLEGAL,st.legal||{});
+function go(v){view=v;msg='';render();scrollTo(0,0)}
+function setL(k,v){st.legal=Object.assign({},L(),{[k]:v});save()}
+function vLegal(){const i=view=='i';return `<div class="card"><h2>${i?'Impressum':'Datenschutzerklärung'}</h2><div style="white-space:pre-wrap">${esc(L()[i?'impressum':'datenschutz'])}</div></div><button class="b s" onclick="go('r')">← Zurück zur Rangliste</button>`}
+const norm=o=>({players:(o.players||[]).map(String).slice(0,40),settings:Object.assign(SAMPLE().settings,o.settings||{}),challenges:o.challenges||[],legal:o.legal});
 async function loadRemote(){try{const r=await fetch('daten.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;st=norm(await r.json());msg='Daten aus daten.json geladen.'}catch(e){st=null;msg='Fehler: daten.json konnte nicht geladen werden.'}return st}
 async function init(){
  if(ADMIN){try{const d=JSON.parse(localStorage.getItem(K));if(d&&d.players)st=norm(d)}catch(e){}}
@@ -162,6 +210,7 @@ function vRules(C){const S=st.settings,pl=st.players,cnt={};pl.forEach(p=>cnt[p.
  <p class="rule"><b>2.1 Aufstieg:</b> Gewinnt der Herausforderer, übernimmt er den Platz des Herausgeforderten. Der Herausgeforderte und alle Spieler dazwischen rutschen um einen Platz nach unten. Gewinnt der Herausgeforderte, bleibt die Rangliste unverändert.</p>
  <p class="rule"><b>2.2 Reichweite:</b> Es darf nur ein Spieler herausgefordert werden, der über dem Herausforderer steht, höchstens ${S.maxUp} Plätze darüber (maßgeblich ist der Rang zum Zeitpunkt des Spiels). Regelwidrige Spiele werden ignoriert.</p>
  <p class="rule"><b>2.3 Aktivität:</b> Jeder Spieler muss in jedem Zeitraum mindestens ein gültiges Spiel bestreiten, ob als Herausforderer oder als Herausgeforderter. Die Zeiträume werden durch Stichtage getrennt (erster Stichtag und Intervall in Monaten stehen in den Einstellungen; liegt der erste Stichtag auf einem Monatsende, bleiben alle weiteren Stichtage auf dem Monatsende). Am Stichtag wird zuerst für alle Spieler festgestellt, wer im abgelaufenen Zeitraum kein gültiges Spiel hatte. Danach wird vom vorletzten Platz nach oben bis Platz 1 geprüft: Ist der Spieler auf Platz k inaktiv, tauscht er sofort den Platz mit dem Spieler auf Platz k+1 und rutscht dadurch einen Platz nach unten; anschließend wird Platz k−1 geprüft. Der letzte Platz kann nicht weiter nach unten rutschen. Spiele am Tag des Stichtags zählen noch für den abgelaufenen Zeitraum, der Stichtag wird erst danach angewendet. Ist die Aktivitätsregel in den Einstellungen ausgeschaltet, gibt es keine Stichtage.</p></div>
+ <div class="card adm"><h2>Rechtliche Texte (Impressum &amp; Datenschutz)</h2><label>Impressum</label><textarea rows="10" onchange="setL('impressum',this.value)">${esc(L().impressum)}</textarea><label style="margin-top:10px">Datenschutz</label><textarea rows="14" onchange="setL('datenschutz',this.value)">${esc(L().datenschutz)}</textarea><div class="mut" style="margin-top:6px">Änderungen werden für alle sichtbar, sobald du „Online speichern“ drückst.</div></div>
  <div class="card adm"><h2>Daten</h2>
  <div class="grid" style="margin-bottom:10px"><div><label>GitHub-Repository (name/repo)</label><input id="ghr" value="${esc(GH.repo)}" placeholder="dein-name/dart-liga" onchange="ghSet()"></div><div><label>Zugriffsschlüssel (Token)</label><input id="ght" type="password" value="${esc(GH.token)}" placeholder="github_pat_…" onchange="ghSet()"></div></div>
  <div class="btns" style="margin:0 0 12px"><button class="b" onclick="ghSave()">☁️ Online speichern</button></div><div class="btns" style="margin:0 0 10px"><button class="b" onclick="dlJ()">daten.json herunterladen</button><button class="b s" onclick="rel()">Neu aus daten.json laden</button><button class="b s" onclick="expJ()">Export (JSON anzeigen)</button><button class="b s" onclick="impJ()">Import (aus Feld)</button><button class="b s" onclick="smp()">Beispieldaten laden</button><button class="b s" onclick="clr()">Alles löschen</button></div>
@@ -172,8 +221,9 @@ function render(){document.querySelectorAll('#nav button').forEach(b=>b.classLis
  const C=compute(),shot=view=='shot',app=document.getElementById('app');
  document.querySelector('header').style.display=shot?'none':'';
  document.body.style.overflow=shot?'hidden':'';
+ document.querySelector('footer').style.display=shot?'none':'';
  app.style.cssText=shot?'padding:0;max-width:none':'';
- app.innerHTML=shot?`<div id="sw" style="position:absolute;left:0;top:0;width:1250px;transform-origin:0 0;padding:14px">${vRank(C)}</div><button class="x noprint" style="position:fixed;right:8px;bottom:8px;opacity:.6;background:var(--card)" onclick="view='r';render()">✕ Schließen</button>`:view=='r'?vRank(C):view=='c'?vChal(C):vRules(C);
+ app.innerHTML=shot?`<div id="sw" style="position:absolute;left:0;top:0;width:1250px;transform-origin:0 0;padding:14px">${vRank(C)}</div><button class="x noprint" style="position:fixed;right:8px;bottom:8px;opacity:.6;background:var(--card)" onclick="view='r';render()">✕ Schließen</button>`:view=='r'?vRank(C):view=='c'?vChal(C):view=='i'||view=='d'?vLegal():vRules(C);
  if(shot)fit()}
 function fit(){const e=document.getElementById('sw');if(!e)return;e.style.transform='none';const H=e.offsetHeight,W=1250,s=Math.min(innerWidth/W,innerHeight/H);e.style.transform=`scale(${s})`;e.style.left=Math.max(0,(innerWidth-W*s)/2)+'px'}
 onresize=()=>view=='shot'&&fit();
@@ -189,7 +239,7 @@ function addC(){const g=id=>$(id).value;if(!g('fh')||!g('fg')){return alert('Bit
 function delC(i){st.challenges.splice(i,1);save()}
 function expJ(){jsonTxt=JSON.stringify(st,null,1);msg='Export erstellt – Text kopieren und sichern.';render()}
 function impJ(){try{const o=JSON.parse($('js').value);if(!Array.isArray(o.players)||!Array.isArray(o.challenges))throw 0;
- st={players:o.players.map(String).slice(0,40),settings:Object.assign(SAMPLE().settings,o.settings||{}),challenges:o.challenges};msg='Import erfolgreich.';jsonTxt='';save()}catch(e){msg='Fehler: Ungültiges JSON.';render()}}
+ st={players:o.players.map(String).slice(0,40),settings:Object.assign(SAMPLE().settings,o.settings||{}),challenges:o.challenges,legal:o.legal};msg='Import erfolgreich.';jsonTxt='';save()}catch(e){msg='Fehler: Ungültiges JSON.';render()}}
 function smp(){st=SAMPLE();msg='Beispieldaten geladen.';save()}
 function clr(){st={players:[],settings:SAMPLE().settings,challenges:[]};msg='Alle Daten gelöscht.';save()}
 init();
