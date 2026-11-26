@@ -34,8 +34,8 @@
   "maxUp": 3,
   "rule23": true,
   "seasonStart": "2027-01-01",
-  "firstCutoff": "2027-01-31",
-  "interval": 1
+  "firstCutoff": "2027-03-31",
+  "interval": 3
  },
  "challenges": []
 }
