@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Dart-Vereinsrangliste</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0f17;--card:#141b29;--line:#26324a;--tx:#e8edf7;--mut:#8b98b3;--red:#e5384b;--grn:#2fbf71;--yel:#f2c230;--acc:#e5384b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 500px at 50% -200px,#1b2740,var(--bg));color:var(--tx);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+header{padding:16px 16px 0;max-width:1400px;margin:auto}
+h1{margin:0 0 10px;font-size:24px;letter-spacing:.5px}h1 span{color:var(--acc)}
+nav{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;color:var(--mut);padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;border-bottom:3px solid transparent}
+nav button.on{color:var(--tx);border-color:var(--acc)}
+main{max-width:1400px;margin:auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+h2{margin:0 0 10px;font-size:18px}
+.info{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px}.pill b{display:block;font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;background:#10172400;position:sticky;top:0}
+td.l,th.l{text-align:left}
+tr.r1 td{background:#f2c23022;color:#ffd75e;font-weight:700}
+tr.r2 td{background:#c0c8d822;color:#dfe5f1;font-weight:700}
+tr.r3 td{background:#cd7f3222;color:#e8a367;font-weight:700}
+.ok{color:var(--grn);font-weight:600}.warn{color:var(--yel);font-weight:600}.err{color:var(--red);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mut);font-weight:600;margin-bottom:3px}
+input,select,textarea{width:100%;background:#0d1320;color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit}
+input.dup{border-color:var(--red);color:var(--red)}
+button.b{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer}
+button.s{background:#222d45}button.x{background:none;border:1px solid var(--line);color:var(--mut);border-radius:6px;padding:3px 8px;cursor:pointer}
+.row{display:flex;gap:6px;align-items:center;margin-bottom:6px}.row span{width:28px;color:var(--mut);text-align:right}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+p.rule{margin:0 0 10px}.mut{color:var(--mut)}
+.ph{display:none}
+body:not(.admin) .adm{display:none!important}
+#sw .noprint{display:none}
+@page{size:A4 portrait;margin:10mm}
+@media print{:root{color-scheme:light}body{background:#fff;color:#000;font-size:10px}tr{break-inside:avoid}header,nav,.noprint{display:none!important}main{padding:0}.ph{display:block;margin:0 0 8px;font-size:20px}.card,.pill{background:#fff;border-color:#999;color:#000}.pill b{color:#444}.sc{overflow:visible}table{white-space:normal}th,td{color:#000!important;border-color:#bbb;padding:5px 6px}th{background:#fff;position:static}tr.r1 td{background:#ffe08a!important}tr.r2 td{background:#dde2ea!important}tr.r3 td{background:#f0c9a4!important}.ok,.warn{color:#000!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<header><h1>🎯 Dart-<span>Vereinsrangliste</span></h1>
+<nav id="nav"><button data-v="r">Rangliste</button><button data-v="c">Herausforderungen</button><button data-v="s">Regeln &amp; Spieler</button></nav><div class="adm warn" style="padding:8px 0">Admin-Modus: Änderungen gelten nur auf diesem Gerät, bis du daten.json herunterlädst und online hochlädst.</div></header>
+<main id="app">Lade Daten …</main>
+<script>
+const K='dartRangliste_v1',FT=[2,3,4,5,6,7,9,11];
+const SAMPLE=()=>({players:['Stefan Huber','Markus Bauer','Andreas Maier','Thomas Wagner','Florian Schmid','Lukas Becker','Daniel Hofmann','Julia Koch'],
+settings:{firstTo:3,maxUp:3,rule23:true,seasonStart:'2026-07-01',firstCutoff:'2026-09-30',interval:3},
+challenges:[['2026-07-10','Andreas Maier','Stefan Huber',3,1],['2026-08-02','Julia Koch','Florian Schmid',3,2],['2026-08-20','Daniel Hofmann','Andreas Maier',3,0],['2026-09-05','Markus Bauer','Stefan Huber',3,0],['2026-10-12','Thomas Wagner','Julia Koch',5,4,5],['2026-11-03','Lukas Becker','Florian Schmid','',''],['2026-11-18','Daniel Hofmann','Thomas Wagner',1,3]].map(a=>({date:a[0],hf:a[1],hg:a[2],lh:a[3],lg:a[4],ft:a[5]||'',note:''}))});
+const ADMIN=/[?&]admin/.test(location.search);
+document.body.classList.toggle('admin',ADMIN);
+let st=null,view='r',msg='',jsonTxt='';
+const norm=o=>({players:(o.players||[]).map(String).slice(0,40),settings:Object.assign(SAMPLE().settings,o.settings||{}),challenges:o.challenges||[]});
+async function loadRemote(){try{const r=await fetch('daten.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;st=norm(await r.json());msg='Daten aus daten.json geladen.'}catch(e){st=null;msg='Fehler: daten.json konnte nicht geladen werden.'}return st}
+async function init(){
+ if(ADMIN){try{const d=JSON.parse(localStorage.getItem(K));if(d&&d.players)st=norm(d)}catch(e){}}
+ if(!st)await loadRemote();
+ if(!st){st=norm({});document.getElementById('app').innerHTML='';}
+ sortC();render()}
+function dlJ(){const b=new Blob([JSON.stringify(st,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='daten.json';document.body.appendChild(a);a.click();a.remove();msg='daten.json erstellt – jetzt online hochladen.';render()}
+async function rel(){const old=st;await loadRemote();if(!st)st=old;save()}
+const today=new Date().toLocaleDateString('sv');
+const P=s=>{const[a,b,c]=s.split('-').map(Number);return Date.UTC(a,b-1,c)};
+const F=m=>new Date(m).toISOString().slice(0,10);
+const D=s=>s?s.split('-').reverse().join('.'):'–';
+const addD=(s,n)=>F(P(s)+n*864e5);
+const isEom=s=>new Date(P(s)+864e5).getUTCDate()===1;
+function addM(s,n,eom){const[y,m,d]=s.split('-').map(Number);if(eom)return F(Date.UTC(y,m-1+n+1,0));const last=new Date(Date.UTC(y,m-1+n+1,0)).getUTCDate();return F(Date.UTC(y,m-1+n,Math.min(d,last)))}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=(n,d)=>d?(100*n/d).toFixed(1).replace('.',',')+' %':'–';
+function sortC(){st.challenges=st.challenges.map((c,i)=>[c,i]).sort((a,b)=>(a[0].date?0:1)-(b[0].date?0:1)||(a[0].date<b[0].date?-1:a[0].date>b[0].date?1:0)||a[1]-b[1]).map(x=>x[0])}
+function save(){sortC();if(ADMIN)try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}render()}
+
+function compute(){
+ const S=st.settings,pl=st.players,ch=st.challenges,eom=isEom(S.firstCutoff),cuts=[];
+ for(let n=1;n<=20;n++){const to=addM(S.firstCutoff,(n-1)*S.interval,eom);cuts.push({n,to,from:n==1?S.seasonStart:addD(cuts[n-2].to,1)})}
+ const ev=ch.map((c,i)=>({t:c.date||'',k:0,i}));
+ if(S.rule23)cuts.forEach(c=>{if(c.to<=today)ev.push({t:c.to,k:1,i:c.n})});
+ ev.sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:a.k-b.k||a.i-b.i);
+ let order=[...pl];const stats={},res=[],games=[];let act=new Set();
+ pl.forEach(p=>stats[p]={g:0,w:0,l:0,lw:0,ll:0,last:''});
+ for(const e of ev){
+  if(e.k==1){const ina=order.filter(p=>!act.has(p));
+   for(let k=order.length-2;k>=0;k--)if(ina.includes(order[k]))[order[k],order[k+1]]=[order[k+1],order[k]];
+   act=new Set();continue}
+  const c=ch[e.i],ih=order.indexOf(c.hf),ig=order.indexOf(c.hg),r={rh:ih>=0?ih+1:'',rg:ig>=0?ig+1:'',s:'',cls:'',w:''};res[e.i]=r;
+  const bad=t=>{r.s='Fehler: '+t;r.cls='err'};
+  if(ih<0||ig<0)bad('Spieler unbekannt');
+  else if(c.hf===c.hg)bad('gleicher Spieler');
+  else if(!c.date||c.lh===''||c.lg===''||c.lh==null||c.lg==null){r.s='unvollständig';r.cls='warn'}
+  else{const ft=+c.ft||S.firstTo,a=+c.lh,b=+c.lg;
+   if(!(Number.isInteger(a)&&Number.isInteger(b)&&a>=0&&b>=0&&Math.max(a,b)===ft&&Math.min(a,b)<ft))bad('Ergebnis passt nicht zu First to '+ft);
+   else if(ig>=ih)bad('Gegner steht nicht über HF');
+   else if(ih-ig>S.maxUp)bad('mehr als '+S.maxUp+' Plätze');
+   else{r.s='gültig';r.cls='ok';const hw=a>b;r.w=hw?c.hf:c.hg;
+    const A=stats[c.hf],B=stats[c.hg];A.g++;B.g++;A.lw+=a;A.ll+=b;B.lw+=b;B.ll+=a;
+    if(hw){A.w++;B.l++;order.splice(ih,1);order.splice(ig,0,c.hf)}else{B.w++;A.l++}
+    A.last=B.last=c.date;act.add(c.hf);act.add(c.hg);games.push({date:c.date,a:c.hf,b:c.hg})}}
+ }
+ const done=cuts.filter(c=>c.to<=today).length;
+ const curStart=done?addD(cuts[done-1].to,1):S.seasonStart;
+ return{order,stats,res,cuts,curStart,nextCut:cuts[done]?cuts[done].to:'',games}
+}
+
+function vRank(C){const S=st.settings,n=C.order.length;
+ let h=`<h2 class="ph">Dart-Vereinsrangliste</h2><div class="info"><div class="pill"><b>Stand</b>${D(today)}</div><div class="pill"><b>Nächster Stichtag</b>${S.rule23?D(C.nextCut):'Aktivitätsregel inaktiv'}</div><div class="pill"><b>Spielmodus</b>First to ${S.firstTo}</div><button class="b s noprint" style="margin-left:auto" onclick="view='shot';render()">📸 Screenshot-Ansicht</button><button class="b noprint" onclick="window.print()">🖨️ Drucken</button></div>
+ <div class="card sc"><table><tr><th>Rang</th><th class="l">Name</th><th>Letzte Herausf.</th><th>Spiele</th><th>Siege</th><th>Niederl.</th><th>S : N</th><th>Siegquote</th><th>Legs +</th><th>Legs −</th><th>Legs + : −</th><th>Leg-Quote</th><th>Pflichtspiel</th><th>Darf fordern</th></tr>`;
+ C.order.forEach((p,i)=>{const s=C.stats[p],r=i+1,pf=C.games.some(g=>g.date>=C.curStart&&(g.a===p||g.b===p));
+  const lo=Math.max(1,r-S.maxUp);
+  h+=`<tr class="${r<4?'r'+r:''}"><td>${r}</td><td class="l">${esc(p)}</td><td>${D(s.last)}</td><td>${s.g}</td><td>${s.w}</td><td>${s.l}</td><td>${s.w} : ${s.l}</td><td>${pct(s.w,s.g)}</td><td>${s.lw}</td><td>${s.ll}</td><td>${s.lw-s.ll>0?'+':''}${s.lw-s.ll}</td><td>${pct(s.lw,s.lw+s.ll)}</td><td class="${pf?'ok':'warn'}">${pf?'erfüllt':'offen'}</td><td>${r==1?'–':lo+' - '+(r-1)}</td></tr>`});
+ return h+(n?'':'<tr><td colspan="14" class="mut">Keine Spieler vorhanden.</td></tr>')+'</table></div>'}
+
+function vChal(C){const S=st.settings,opt=(sel)=>'<option value="">– wählen –</option>'+st.players.map(p=>`<option>${esc(p)}</option>`).join('');
+ let h=`<div class="card adm"><h2>Neues Spiel eintragen</h2><div class="grid">
+ <div><label>Datum</label><input type="date" id="fd" value="${today}"></div>
+ <div><label>Herausforderer</label><select id="fh">${opt()}</select></div>
+ <div><label>Herausgeforderter</label><select id="fg">${opt()}</select></div>
+ <div><label>Legs Herausforderer</label><input type="number" min="0" id="fl"></div>
+ <div><label>Legs Herausgeforderter</label><input type="number" min="0" id="fm"></div>
+ <div><label>First to (optional)</label><select id="ff"><option value="">Standard (${S.firstTo})</option>${FT.map(x=>`<option>${x}</option>`).join('')}</select></div>
+ <div><label>Bemerkung</label><input id="fn"></div></div>
+ <div class="btns"><button class="b" onclick="addC()">Spiel hinzufügen</button></div></div>
+ <div class="card sc"><h2>Alle Herausforderungen</h2><table><tr><th>Nr.</th><th>Datum</th><th class="l">Herausforderer</th><th class="l">Herausgeforderter</th><th>Legs HF</th><th>Legs HG</th><th>First to</th><th class="l">Bemerkung</th><th>Rang HF vorher</th><th>Rang HG vorher</th><th class="l">Sieger</th><th class="l">Status</th><th></th></tr>`;
+ st.challenges.forEach((c,i)=>{const r=C.res[i]||{};
+  h+=`<tr><td>${i+1}</td><td>${D(c.date)}</td><td class="l">${esc(c.hf)}</td><td class="l">${esc(c.hg)}</td><td>${esc(c.lh)}</td><td>${esc(c.lg)}</td><td>${+c.ft||S.firstTo}</td><td class="l">${esc(c.note)}</td><td>${r.rh}</td><td>${r.rg}</td><td class="l">${esc(r.w)}</td><td class="l ${r.cls}">${esc(r.s)}</td><td><button class="x adm" onclick="delC(${i})">✕</button></td></tr>`});
+ return h+(st.challenges.length?'':'<tr><td colspan="13" class="mut">Noch keine Spiele.</td></tr>')+'</table></div>'}
+
+function vRules(C){const S=st.settings,pl=st.players,cnt={};pl.forEach(p=>cnt[p.trim().toLowerCase()]=(cnt[p.trim().toLowerCase()]||0)+1);
+ const sel=(k,arr)=>`<select onchange="setS('${k}',this.value)">${arr.map(x=>`<option ${x==S[k]?'selected':''}>${x}</option>`).join('')}</select>`;
+ let h=`<div class="card"><h2>Einstellungen &amp; Kennzahlen</h2><div class="grid adm">
+ <div><label>Standard First to</label>${sel('firstTo',FT)}</div>
+ <div><label>Max. Plätze nach oben fordern</label><input type="number" min="1" value="${S.maxUp}" onchange="setS('maxUp',this.value)"></div>
+ <div><label>Aktivitätsregel aktiv (mind. 1 Spiel pro Zeitraum)</label><select onchange="setS('rule23',this.value)"><option value="1" ${S.rule23?'selected':''}>Ja</option><option value="0" ${S.rule23?'':'selected'}>Nein</option></select></div>
+ <div><label>Saisonstart</label><input type="date" value="${S.seasonStart}" onchange="setS('seasonStart',this.value)"></div>
+ <div><label>Erster Stichtag der Aktivitätsregel</label><input type="date" value="${S.firstCutoff}" onchange="setS('firstCutoff',this.value)"></div>
+ <div><label>Intervall in Monaten</label><input type="number" min="1" max="12" value="${S.interval}" onchange="setS('interval',this.value)"></div></div>
+ <div class="info" style="margin:12px 0 0"><div class="pill"><b>Anzahl Spieler</b>${pl.length}</div><div class="pill"><b>Beginn aktueller Zeitraum</b>${D(C.curStart)}</div><div class="pill"><b>Nächster Stichtag</b>${S.rule23?D(C.nextCut):'inaktiv'}</div></div></div>
+ <div class="card sc"><h2>Stichtage</h2><table><tr><th>Nr.</th><th>Zeitraum von</th><th>Stichtag</th><th class="l">Status</th></tr>`;
+ C.cuts.forEach(c=>{const t=!S.rule23?['inaktiv','mut']:c.to<=today?['angewendet','ok']:['ausstehend','warn'];h+=`<tr><td>${c.n}</td><td>${D(c.from)}</td><td>${D(c.to)}</td><td class="l ${t[1]}">${t[0]}</td></tr>`});
+ h+=`</table></div><div class="card adm"><h2>Spielerliste (Startrangliste, max. 40)</h2>`;
+ pl.forEach((p,i)=>{h+=`<div class="row"><span>${i+1}</span><input class="${cnt[p.trim().toLowerCase()]>1?'dup':''}" value="${esc(p)}" onchange="renP(${i},this.value)"><button class="x" onclick="mvP(${i},-1)">▲</button><button class="x" onclick="mvP(${i},1)">▼</button><button class="x" onclick="delP(${i})">✕</button></div>`});
+ h+=`<div class="row"><span></span><input id="np" placeholder="Neuer Spieler (wird unten angehängt)"><button class="b" onclick="addP()">Hinzufügen</button></div>
+ ${Object.values(cnt).some(v=>v>1)?'<div class="err">Doppelte Namen vorhanden!</div>':''}</div>
+ <div class="card"><h2>Regelwerk</h2>
+ <p class="rule"><b>2.1 Aufstieg:</b> Gewinnt der Herausforderer, übernimmt er den Platz des Herausgeforderten. Der Herausgeforderte und alle Spieler dazwischen rutschen um einen Platz nach unten. Gewinnt der Herausgeforderte, bleibt die Rangliste unverändert.</p>
+ <p class="rule"><b>2.2 Reichweite:</b> Es darf nur ein Spieler herausgefordert werden, der über dem Herausforderer steht, höchstens ${S.maxUp} Plätze darüber (maßgeblich ist der Rang zum Zeitpunkt des Spiels). Regelwidrige Spiele werden ignoriert.</p>
+ <p class="rule"><b>2.3 Aktivität:</b> Jeder Spieler muss in jedem Zeitraum mindestens ein gültiges Spiel bestreiten, ob als Herausforderer oder als Herausgeforderter. Die Zeiträume werden durch Stichtage getrennt (erster Stichtag und Intervall in Monaten stehen in den Einstellungen; liegt der erste Stichtag auf einem Monatsende, bleiben alle weiteren Stichtage auf dem Monatsende). Am Stichtag wird zuerst für alle Spieler festgestellt, wer im abgelaufenen Zeitraum kein gültiges Spiel hatte. Danach wird vom vorletzten Platz nach oben bis Platz 1 geprüft: Ist der Spieler auf Platz k inaktiv, tauscht er sofort den Platz mit dem Spieler auf Platz k+1 und rutscht dadurch einen Platz nach unten; anschließend wird Platz k−1 geprüft. Der letzte Platz kann nicht weiter nach unten rutschen. Spiele am Tag des Stichtags zählen noch für den abgelaufenen Zeitraum, der Stichtag wird erst danach angewendet. Ist die Aktivitätsregel in den Einstellungen ausgeschaltet, gibt es keine Stichtage.</p></div>
+ <div class="card adm"><h2>Daten</h2><div class="btns" style="margin:0 0 10px"><button class="b" onclick="dlJ()">daten.json herunterladen</button><button class="b s" onclick="rel()">Neu aus daten.json laden</button><button class="b s" onclick="expJ()">Export (JSON anzeigen)</button><button class="b s" onclick="impJ()">Import (aus Feld)</button><button class="b s" onclick="smp()">Beispieldaten laden</button><button class="b s" onclick="clr()">Alles löschen</button></div>
+ <textarea id="js" rows="6" placeholder="JSON hier einfügen oder exportieren und kopieren">${esc(jsonTxt)}</textarea><div class="${msg.startsWith('Fehler')?'err':'ok'}" style="margin-top:6px">${esc(msg)}</div></div>`;
+ return h}
+
+function render(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==view));
+ const C=compute(),shot=view=='shot',app=document.getElementById('app');
+ document.querySelector('header').style.display=shot?'none':'';
+ document.body.style.overflow=shot?'hidden':'';
+ app.style.cssText=shot?'padding:0;max-width:none':'';
+ app.innerHTML=shot?`<div id="sw" style="position:absolute;left:0;top:0;width:1250px;transform-origin:0 0;padding:14px">${vRank(C)}</div><button class="x noprint" style="position:fixed;right:8px;bottom:8px;opacity:.6;background:var(--card)" onclick="view='r';render()">✕ Schließen</button>`:view=='r'?vRank(C):view=='c'?vChal(C):vRules(C);
+ if(shot)fit()}
+function fit(){const e=document.getElementById('sw');if(!e)return;e.style.transform='none';const H=e.offsetHeight,W=1250,s=Math.min(innerWidth/W,innerHeight/H);e.style.transform=`scale(${s})`;e.style.left=Math.max(0,(innerWidth-W*s)/2)+'px'}
+onresize=()=>view=='shot'&&fit();
+document.getElementById('nav').onclick=e=>{const v=e.target.dataset.v;if(v){view=v;msg='';render()}};
+const $=id=>document.getElementById(id);
+function setS(k,v){const S=st.settings;if(['firstTo','maxUp','interval'].includes(k)){v=Math.max(1,parseInt(v)||S[k])}else if(k=='rule23')v=v=='1';else if(!v)return render();S[k]=v;save()}
+function addP(){const v=$('np').value.trim();if(!v)return;if(st.players.length>=40){msg='Fehler: Maximal 40 Spieler.';return render()}st.players.push(v);save()}
+function renP(i,v){st.players[i]=v.trim();save()}
+function delP(i){st.players.splice(i,1);save()}
+function mvP(i,d){const j=i+d;if(j<0||j>=st.players.length)return;[st.players[i],st.players[j]]=[st.players[j],st.players[i]];save()}
+function addC(){const g=id=>$(id).value;if(!g('fh')||!g('fg')){return alert('Bitte Herausforderer und Herausgeforderten wählen.')}
+ st.challenges.push({date:g('fd'),hf:g('fh'),hg:g('fg'),lh:g('fl'),lg:g('fm'),ft:g('ff'),note:g('fn')});save()}
+function delC(i){st.challenges.splice(i,1);save()}
+function expJ(){jsonTxt=JSON.stringify(st,null,1);msg='Export erstellt – Text kopieren und sichern.';render()}
+function impJ(){try{const o=JSON.parse($('js').value);if(!Array.isArray(o.players)||!Array.isArray(o.challenges))throw 0;
+ st={players:o.players.map(String).slice(0,40),settings:Object.assign(SAMPLE().settings,o.settings||{}),challenges:o.challenges};msg='Import erfolgreich.';jsonTxt='';save()}catch(e){msg='Fehler: Ungültiges JSON.';render()}}
+function smp(){st=SAMPLE();msg='Beispieldaten geladen.';save()}
+function clr(){st={players:[],settings:SAMPLE().settings,challenges:[]};msg='Alle Daten gelöscht.';save()}
+init();
+</script>
+</body>
+</html>
