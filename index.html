@@ -63,6 +63,17 @@ async function init(){
  if(!st)await loadRemote();
  if(!st){st=norm({});document.getElementById('app').innerHTML='';}
  sortC();render()}
+let GH={repo:'',token:''};try{GH=Object.assign(GH,JSON.parse(localStorage.getItem('dartGH')))}catch(e){}
+function ghSet(){GH.repo=$('ghr').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,'');GH.token=$('ght').value.trim();try{localStorage.setItem('dartGH',JSON.stringify(GH))}catch(e){}}
+async function ghSave(){ghSet();if(!/^[\w.-]+\/[\w.-]+$/.test(GH.repo)||!GH.token){msg='Fehler: Repository (name/repo) und Token eintragen.';return render()}
+ const u='https://api.github.com/repos/'+GH.repo+'/contents/daten.json',h={Authorization:'Bearer '+GH.token,Accept:'application/vnd.github+json'};
+ try{msg='Speichere …';render();
+  let sha;const g=await fetch(u,{headers:h});if(g.ok)sha=(await g.json()).sha;else if(g.status!=404)throw g.status;
+  const body={message:'Rangliste aktualisiert '+new Date().toLocaleString('de-DE'),content:btoa(unescape(encodeURIComponent(JSON.stringify(st,null,1)))),sha};
+  const p=await fetch(u,{method:'PUT',headers:h,body:JSON.stringify(body)});if(!p.ok)throw p.status;
+  msg='Online gespeichert – in 1–2 Minuten für alle sichtbar.'}
+ catch(e){msg='Fehler: Speichern fehlgeschlagen ('+e+'). '+(e==401||e==403?'Token prüfen (Recht: Contents Read and write).':e==404?'Repository-Name oder Token-Zugriff prüfen.':e==409||e==422?'Datei wurde zwischenzeitlich geändert: „Neu aus daten.json laden“ und erneut versuchen.':'')}
+ render()}
 function dlJ(){const b=new Blob([JSON.stringify(st,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='daten.json';document.body.appendChild(a);a.click();a.remove();msg='daten.json erstellt – jetzt online hochladen.';render()}
 async function rel(){const old=st;await loadRemote();if(!st)st=old;save()}
 const today=new Date().toLocaleDateString('sv');
@@ -151,7 +162,9 @@ function vRules(C){const S=st.settings,pl=st.players,cnt={};pl.forEach(p=>cnt[p.
  <p class="rule"><b>2.1 Aufstieg:</b> Gewinnt der Herausforderer, übernimmt er den Platz des Herausgeforderten. Der Herausgeforderte und alle Spieler dazwischen rutschen um einen Platz nach unten. Gewinnt der Herausgeforderte, bleibt die Rangliste unverändert.</p>
  <p class="rule"><b>2.2 Reichweite:</b> Es darf nur ein Spieler herausgefordert werden, der über dem Herausforderer steht, höchstens ${S.maxUp} Plätze darüber (maßgeblich ist der Rang zum Zeitpunkt des Spiels). Regelwidrige Spiele werden ignoriert.</p>
  <p class="rule"><b>2.3 Aktivität:</b> Jeder Spieler muss in jedem Zeitraum mindestens ein gültiges Spiel bestreiten, ob als Herausforderer oder als Herausgeforderter. Die Zeiträume werden durch Stichtage getrennt (erster Stichtag und Intervall in Monaten stehen in den Einstellungen; liegt der erste Stichtag auf einem Monatsende, bleiben alle weiteren Stichtage auf dem Monatsende). Am Stichtag wird zuerst für alle Spieler festgestellt, wer im abgelaufenen Zeitraum kein gültiges Spiel hatte. Danach wird vom vorletzten Platz nach oben bis Platz 1 geprüft: Ist der Spieler auf Platz k inaktiv, tauscht er sofort den Platz mit dem Spieler auf Platz k+1 und rutscht dadurch einen Platz nach unten; anschließend wird Platz k−1 geprüft. Der letzte Platz kann nicht weiter nach unten rutschen. Spiele am Tag des Stichtags zählen noch für den abgelaufenen Zeitraum, der Stichtag wird erst danach angewendet. Ist die Aktivitätsregel in den Einstellungen ausgeschaltet, gibt es keine Stichtage.</p></div>
- <div class="card adm"><h2>Daten</h2><div class="btns" style="margin:0 0 10px"><button class="b" onclick="dlJ()">daten.json herunterladen</button><button class="b s" onclick="rel()">Neu aus daten.json laden</button><button class="b s" onclick="expJ()">Export (JSON anzeigen)</button><button class="b s" onclick="impJ()">Import (aus Feld)</button><button class="b s" onclick="smp()">Beispieldaten laden</button><button class="b s" onclick="clr()">Alles löschen</button></div>
+ <div class="card adm"><h2>Daten</h2>
+ <div class="grid" style="margin-bottom:10px"><div><label>GitHub-Repository (name/repo)</label><input id="ghr" value="${esc(GH.repo)}" placeholder="dein-name/dart-liga" onchange="ghSet()"></div><div><label>Zugriffsschlüssel (Token)</label><input id="ght" type="password" value="${esc(GH.token)}" placeholder="github_pat_…" onchange="ghSet()"></div></div>
+ <div class="btns" style="margin:0 0 12px"><button class="b" onclick="ghSave()">☁️ Online speichern</button></div><div class="btns" style="margin:0 0 10px"><button class="b" onclick="dlJ()">daten.json herunterladen</button><button class="b s" onclick="rel()">Neu aus daten.json laden</button><button class="b s" onclick="expJ()">Export (JSON anzeigen)</button><button class="b s" onclick="impJ()">Import (aus Feld)</button><button class="b s" onclick="smp()">Beispieldaten laden</button><button class="b s" onclick="clr()">Alles löschen</button></div>
  <textarea id="js" rows="6" placeholder="JSON hier einfügen oder exportieren und kopieren">${esc(jsonTxt)}</textarea><div class="${msg.startsWith('Fehler')?'err':'ok'}" style="margin-top:6px">${esc(msg)}</div></div>`;
  return h}
 
